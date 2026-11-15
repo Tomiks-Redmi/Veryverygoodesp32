@@ -57,8 +57,8 @@ void soundUpdate() {
 }
 
 // Ноты
-enum : uint16_t { C5 = 523, D5 = 587, E5 = 659, F5 = 698, G5 = 784, A5 = 880, B5 = 988,
-                  C6 = 1047, E6 = 1319, G6 = 1568, C7 = 2093 };
+enum : uint16_t { N_C5 = 523, N_D5 = 587, N_E5 = 659, N_F5 = 698, N_G5 = 784, N_A5 = 880, N_B5 = 988,
+                  N_C6 = 1047, N_E6 = 1319, N_G6 = 1568, N_C7 = 2093 };
 
 void sfx(Sfx s) {
   if (continuous) return;  // не перебиваем сирену/терменвокс
@@ -66,17 +66,17 @@ void sfx(Sfx s) {
     case SFX_CLICK:
       if (cfg.clickSound) beep(3200, 4);
       break;
-    case SFX_OK:      { static const Note n[] = {{C6, 30}, {G6, 40}}; play(n, 2); } break;
-    case SFX_BACK:    { static const Note n[] = {{G6, 30}, {C6, 40}}; play(n, 2); } break;
+    case SFX_OK:      { static const Note n[] = {{N_C6, 30}, {N_G6, 40}}; play(n, 2); } break;
+    case SFX_BACK:    { static const Note n[] = {{N_G6, 30}, {N_C6, 40}}; play(n, 2); } break;
     case SFX_ERROR:   { static const Note n[] = {{300, 120}, {0, 40}, {250, 180}}; play(n, 3); } break;
-    case SFX_START:   { static const Note n[] = {{C5, 80}, {E5, 80}, {G5, 80}, {C6, 160}}; play(n, 4); } break;
-    case SFX_ARMED:   { static const Note n[] = {{A5, 100}, {0, 50}, {A5, 100}, {0, 50}, {E6, 250}}; play(n, 5, true); } break;
-    case SFX_DISARMED:{ static const Note n[] = {{E6, 100}, {C6, 100}, {A5, 200}}; play(n, 3, true); } break;
+    case SFX_START:   { static const Note n[] = {{N_C5, 80}, {N_E5, 80}, {N_G5, 80}, {N_C6, 160}}; play(n, 4); } break;
+    case SFX_ARMED:   { static const Note n[] = {{N_A5, 100}, {0, 50}, {N_A5, 100}, {0, 50}, {N_E6, 250}}; play(n, 5, true); } break;
+    case SFX_DISARMED:{ static const Note n[] = {{N_E6, 100}, {N_C6, 100}, {N_A5, 200}}; play(n, 3, true); } break;
     case SFX_ALERT:   { static const Note n[] = {{2400, 90}, {0, 60}, {2400, 90}, {0, 60}, {2400, 90}}; play(n, 5); } break;
-    case SFX_EAT:     { static const Note n[] = {{E6, 25}, {G6, 35}}; play(n, 2); } break;
-    case SFX_COIN:    { static const Note n[] = {{B5, 50}, {E6, 120}}; play(n, 2); } break;
-    case SFX_GAMEOVER:{ static const Note n[] = {{G5, 150}, {E5, 150}, {C5, 150}, {200, 400}}; play(n, 4); } break;
-    case SFX_WIN:     { static const Note n[] = {{C6, 90}, {E6, 90}, {G6, 90}, {C7, 250}}; play(n, 4); } break;
+    case SFX_EAT:     { static const Note n[] = {{N_E6, 25}, {N_G6, 35}}; play(n, 2); } break;
+    case SFX_COIN:    { static const Note n[] = {{N_B5, 50}, {N_E6, 120}}; play(n, 2); } break;
+    case SFX_GAMEOVER:{ static const Note n[] = {{N_G5, 150}, {N_E5, 150}, {N_C5, 150}, {200, 400}}; play(n, 4); } break;
+    case SFX_WIN:     { static const Note n[] = {{N_C6, 90}, {N_E6, 90}, {N_G6, 90}, {N_C7, 250}}; play(n, 4); } break;
     case SFX_MOTION:  { static const Note n[] = {{1800, 30}, {0, 30}, {1800, 30}}; play(n, 3); } break;
   }
 }
