@@ -29,6 +29,8 @@ jobs:
           cp .pio/build/esp32dev/firmware.bin out/
           cp .pio/build/esp32dev/bootloader.bin out/
           cp .pio/build/esp32dev/partitions.bin out/
+          cp ~/.platformio/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin out/
+          pio run -t size | tee out/size.txt
       - uses: actions/upload-artifact@v4
         with:
           name: firmware-esp32dev

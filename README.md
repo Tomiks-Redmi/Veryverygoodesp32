@@ -111,6 +111,19 @@ pio device monitor       # открыть консоль
 
 Каждый push собирается в GitHub Actions. Файлы `firmware.bin`, `bootloader.bin` и `partitions.bin` лежат в артефактах сборки (вкладка **Actions**). Если на устройстве уже стоит эта прошивка, обновить её можно через веб-панель: раздел «Обновление прошивки».
 
+Прошить готовые файлы без PlatformIO можно через [ESP Web Flasher](https://espressif.github.io/esptool-js/) прямо из Chrome или командой `esptool`:
+
+| Файл | Адрес |
+|---|---|
+| `bootloader.bin` | `0x1000` |
+| `partitions.bin` | `0x8000` |
+| `boot_app0.bin` | `0xE000` |
+| `firmware.bin` | `0x10000` |
+
+```bash
+esptool.py --chip esp32 --baud 921600 write_flash 0x1000 bootloader.bin 0x8000 partitions.bin 0xe000 boot_app0.bin 0x10000 firmware.bin
+```
+
 ## Управление
 
 | Действие | Энкодер | Джойстик |
