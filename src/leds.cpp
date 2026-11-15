@@ -137,29 +137,3 @@ void ledsUpdate() {
   if (flashUntil && (int32_t)(flashUntil - now) > 0) fill(flashColor);
   strip.show();
 }
-
-// ---------------- Сервопривод (LEDC, 50 Гц) ----------------
-static const uint8_t SERVO_CH = 2;   // таймер 1 — не мешает бузеру (канал 0)
-static bool servoOn = false;
-static int servoPos = 90;
-
-void servoWrite(int angle) {
-  angle = constrain(angle, 0, 180);
-  if (!servoOn) {
-    ledcSetup(SERVO_CH, 50, 16);
-    ledcAttachPin(PIN_SERVO, SERVO_CH);
-    servoOn = true;
-  }
-  servoPos = angle;
-  uint32_t us = 500 + (uint32_t)angle * 1900 / 180;  // 0.5–2.4 мс
-  ledcWrite(SERVO_CH, us * 65535UL / 20000UL);
-}
-
-void servoRelease() {
-  if (!servoOn) return;
-  ledcWrite(SERVO_CH, 0);
-  ledcDetachPin(PIN_SERVO);
-  servoOn = false;
-}
-
-int servoAngle() { return servoPos; }

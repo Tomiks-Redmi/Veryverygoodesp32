@@ -1,4 +1,4 @@
-// Рулетка, счётчик проходов, серво-тестер, RGB-подсветка
+// Рулетка, счётчик проходов, RGB-подсветка
 #include "screens.h"
 #include "display.h"
 #include "settings.h"
@@ -134,63 +134,6 @@ class PeopleCounter : public Screen {
 };
 
 Screen *scrPeople() { static PeopleCounter s; return &s; }
-
-// =====================================================================
-//  Серво-тестер
-// =====================================================================
-class ServoTester : public Screen {
-  int angle_ = 90;
-  bool sweep_ = false;
-  int8_t dir_ = 1;
-
- public:
-  bool keepAwake() override { return sweep_; }
-  void enter() override { angle_ = servoAngle(); servoWrite(angle_); }
-  void leave() override { servoRelease(); }
-  void event(Ev e) override {
-    switch (e) {
-      case EV_NEXT: case EV_RIGHT: angle_ = min(180, angle_ + 5); sweep_ = false; break;
-      case EV_PREV: angle_ = max(0, angle_ - 5); sweep_ = false; break;
-      case EV_OK: sweep_ = !sweep_; break;
-      default: Screen::event(e); return;
-    }
-    servoWrite(angle_);
-  }
-  void update() override {
-    if (sweep_) {
-      angle_ += dir_ * 3;
-      if (angle_ >= 180) { angle_ = 180; dir_ = -1; }
-      if (angle_ <= 0) { angle_ = 0; dir_ = 1; }
-      servoWrite(angle_);
-    } else if (joy.present && cfg.joyEnabled && abs(joy.x) > 10) {
-      angle_ = constrain(90 + joy.x * 90 / 100, 0, 180);
-      servoWrite(angle_);
-    }
-  }
-  void draw() override {
-    drawHeader(sweep_ ? "Серво: качание" : "Серво-тестер");
-    const int cx = 64, cy = 58, r = 40;
-    gfx.drawCircle(cx, cy, r, U8G2_DRAW_UPPER_LEFT | U8G2_DRAW_UPPER_RIGHT);
-    for (int a = 0; a <= 180; a += 30) {
-      float rad = PI - a * PI / 180;
-      gfx.drawLine(cx + cosf(rad) * (r - 4), cy - sinf(rad) * (r - 4), cx + cosf(rad) * r, cy - sinf(rad) * r);
-    }
-    float rad = PI - angle_ * PI / 180;
-    gfx.drawLine(cx, cy, cx + cosf(rad) * (r - 6), cy - sinf(rad) * (r - 6));
-    gfx.drawDisc(cx, cy, 3);
-    char b[16];
-    snprintf(b, sizeof(b), "%d", angle_);
-    gfx.setFont(F_BOLD);
-    int w = gfx.getStrWidth(b);
-    gfx.drawStr(cx - w / 2, cy - 12, b);
-    gfx.setFont(F_TINY);
-    snprintf(b, sizeof(b), "%dмкс", 500 + angle_ * 1900 / 180);
-    gfx.drawUTF8(0, 63, b);
-    drawRightUTF8(SCR_W, 63, "OK качание");
-  }
-};
-
-Screen *scrServo() { static ServoTester s; return &s; }
 
 // =====================================================================
 //  RGB-подсветка WS2812

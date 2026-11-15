@@ -72,7 +72,6 @@ label{display:flex;justify-content:space-between;gap:8px;align-items:center;marg
 <label>RGB-лента<select name="ledsMode"><option value="0">выкл</option><option value="1">статус</option><option value="2">радуга</option><option value="3">температура</option><option value="4">огонь</option><option value="5">ночник по движению</option><option value="6">сонар</option><option value="7">музыка</option></select></label>
 <label>Яркость ленты<input name="ledsBright" type="range" min="5" max="255"></label>
 <label>Светодиодов в ленте<input name="ledsCount" type="number" min="0" max="64"></label>
-<label>Серво-радар<select name="servoRadar"><option value="0">выкл</option><option value="1">вкл</option></select></label>
 <div class="row"><button class="p" type="submit">Сохранить</button></div></form></div>
 <div class="c w2"><h3>Telegram-бот</h3><form id="tf">
 <div class="s">1) Создайте бота у @BotFather и вставьте токен. 2) Напишите боту любое сообщение — он привяжется к вашему чату. Нужен интернет через роутер.</div>

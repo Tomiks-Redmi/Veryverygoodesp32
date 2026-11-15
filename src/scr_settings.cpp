@@ -69,7 +69,6 @@ static const SItem ITEMS[] = {
   {"Энкодер инв.",     T_BOOL,  &cfg.encInvert,      0,    0,    0,    nullptr, nullptr,    nullptr},
   {"Аналог. вход",     T_BOOL,  &cfg.analogEnabled,  0,    0,    0,    nullptr, nullptr,    nullptr},
   {"Часовой пояс",     T_I8,    &cfg.tzOffset,       -12,  14,   1,    nullptr, cbTz,       nullptr},
-  {"Серво-радар",      T_BOOL,  &cfg.servoRadar,     0,    0,    0,    nullptr, nullptr,    nullptr},
   {"Telegram",         T_BOOL,  &cfg.tgOn,           0,    0,    0,    nullptr, nullptr,    nullptr},
   {"TG: движение",     T_BOOL,  &cfg.tgMotion,       0,    0,    0,    nullptr, nullptr,    nullptr},
   {"WiFi",             T_BOOL,  &cfg.wifiOn,         0,    0,    0,    nullptr, cbWifi,     nullptr},

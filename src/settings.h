@@ -87,9 +87,6 @@ struct Settings {
   uint8_t  ledsCount;        // 0 = нет ленты
   uint8_t  ledsMode;
   uint8_t  ledsBright;
-
-  // Серво-радар
-  bool     servoRadar;
 };
 
 enum LedsMode : uint8_t { LEDS_OFF = 0, LEDS_STATUS, LEDS_RAINBOW, LEDS_TEMP, LEDS_FIRE, LEDS_NIGHT, LEDS_SONAR, LEDS_MUSIC, LEDS_MODE_COUNT };

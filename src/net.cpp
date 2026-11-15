@@ -173,7 +173,6 @@ static void handleGetSettings() {
   jInt(s, "ledsMode", cfg.ledsMode);
   jInt(s, "ledsBright", cfg.ledsBright);
   jInt(s, "ledsCount", cfg.ledsCount);
-  jInt(s, "servoRadar", cfg.servoRadar);
   jEnd(s);
   s += "}";
   server.send(200, "application/json", s);
@@ -222,7 +221,6 @@ static void handlePostSettings() {
   if (server.hasArg("ledsMode"))   cfg.ledsMode = constrain(server.arg("ledsMode").toInt(), 0, LEDS_MODE_COUNT - 1);
   if (server.hasArg("ledsBright")) cfg.ledsBright = constrain(server.arg("ledsBright").toInt(), 5, 255);
   if (server.hasArg("ledsCount"))  cfg.ledsCount = constrain(server.arg("ledsCount").toInt(), 0, 64);
-  b("servoRadar", cfg.servoRadar);
   ledsApply();
   if (server.hasArg("staSsid")) {
     strlcpy(cfg.staSsid, server.arg("staSsid").c_str(), sizeof(cfg.staSsid));

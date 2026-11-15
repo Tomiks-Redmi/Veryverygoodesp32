@@ -99,7 +99,6 @@ static const MenuItem TOOLS_ITEMS[] = {
   {"Рулетка",         [] { uiPush(scrRangefinder()); }},
   {"Счётчик проходов",[] { uiPush(scrPeople()); }},
   {"RGB-подсветка",   [] { uiPush(scrLeds()); }},
-  {"Серво-тестер",    [] { uiPush(scrServo()); }},
   {"I2C сканер",      [] { uiPush(scrI2CScan()); }},
   {"WiFi сканер",     [] { uiPush(scrWifiScan()); }},
   {"Секундомер",      [] { uiPush(scrStopwatch()); }},

@@ -3,7 +3,7 @@
 #include "display.h"
 
 // Меняйте при изменении структуры Settings — настройки сбросятся к умолчаниям
-static const uint32_t SETTINGS_MAGIC = 0x56470200;
+static const uint32_t SETTINGS_MAGIC = 0x56470201;
 
 Settings cfg;
 static Preferences prefs;
@@ -54,7 +54,6 @@ static void setDefaults() {
   cfg.ledsCount      = 8;
   cfg.ledsMode       = LEDS_STATUS;
   cfg.ledsBright     = 60;
-  cfg.servoRadar     = false;
 }
 
 void settingsLoad() {

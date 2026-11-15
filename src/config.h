@@ -43,7 +43,6 @@
 #define PIN_LED          2    // встроенный светодиод
 #define PIN_RELAY        19   // модуль реле
 #define PIN_LEDS         23   // адресная RGB-лента / кольцо WS2812B (DIN)
-#define PIN_SERVO        15   // сервопривод SG90 (поворот сонара для радара)
 
 // ---------- WiFi ----------
 #define WIFI_AP_SSID     "VeryGood-ESP32"

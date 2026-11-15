@@ -29,7 +29,6 @@ Screen *scrAlarmRing();
 Screen *scrAlarmEdit();
 Screen *scrRangefinder();
 Screen *scrPeople();
-Screen *scrServo();
 Screen *scrLeds();
 Screen *scrPong();
 Screen *scrDraw();
