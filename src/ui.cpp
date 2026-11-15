@@ -6,6 +6,7 @@
 #include "logic.h"
 #include "sound.h"
 #include "screens.h"
+#include "clock.h"
 
 static const uint8_t STACK_MAX = 8;
 static Screen *stack[STACK_MAX];
@@ -74,6 +75,18 @@ static void drawSaver() {
   }
   for (auto &s : stars) gfx.drawPixel(s[0], s[1]);
   float t = tempMain();
+  char hm[8];
+  if (clockValid()) {
+    clockFmtHM(hm, sizeof(hm));
+    gfx.setFont(F_BIG);
+    gfx.drawStr(x, y, hm);
+    if (!isnan(t)) {
+      gfx.setFont(F_SMALL);
+      int yy = y + 9 > 63 ? y - 25 : y + 9;
+      drawTempValue(x, yy, t, F_SMALL, false);
+    }
+    return;
+  }
   if (!isnan(t)) {
     drawTempValue(x, y, t, F_BIG, true);
   } else {
@@ -97,6 +110,13 @@ void uiLoop() {
   if (secState() == SEC_ALARM && top != scrSecurity() && top != scrPinEntry()) {
     saver = false;
     uiPush(scrSecurity());
+    top = uiTop();
+  }
+
+  // Будильник
+  if (clockAlarmRinging() && secState() != SEC_ALARM && top != scrAlarmRing()) {
+    saver = false;
+    uiPush(scrAlarmRing());
     top = uiTop();
   }
 
@@ -195,6 +215,45 @@ void ListMenu::draw() {
   listDrawCursor(sel_ - top_);
   for (int i = 0; i < LIST_ROWS && top_ + i < n_; i++) {
     listDrawRow(i, items_[top_ + i].label, nullptr, top_ + i == sel_, false);
+  }
+  drawScrollbar(sel_, n_);
+}
+
+// ---------------- RowEditor ----------------
+void RowEditor::leave() { settingsSave(); }
+
+void RowEditor::event(Ev e) {
+  const EdRow &r = rows_[sel_];
+  if (edit_) {
+    switch (e) {
+      case EV_NEXT: case EV_RIGHT: r.change(+1); break;
+      case EV_PREV: case EV_LEFT:  r.change(-1); break;
+      case EV_OK: case EV_BACK:    edit_ = false; sfx(SFX_OK); break;
+      default: break;
+    }
+    return;
+  }
+  switch (e) {
+    case EV_NEXT: listMoveSel(sel_, top_, n_, 1); break;
+    case EV_PREV: listMoveSel(sel_, top_, n_, -1); break;
+    case EV_OK: case EV_RIGHT:
+      sfx(SFX_OK);
+      if (r.toggle) r.change(0);
+      else edit_ = true;
+      break;
+    default: Screen::event(e);
+  }
+}
+
+void RowEditor::draw() {
+  drawHeader(title_);
+  listDrawCursor(sel_ - top_);
+  char v[24];
+  for (int i = 0; i < LIST_ROWS && top_ + i < n_; i++) {
+    const EdRow &r = rows_[top_ + i];
+    v[0] = 0;
+    if (r.fmt) r.fmt(v, sizeof(v));
+    listDrawRow(i, r.label, v[0] ? v : nullptr, top_ + i == sel_, edit_);
   }
   drawScrollbar(sel_, n_);
 }

@@ -6,6 +6,7 @@
 #include "sound.h"
 #include "logic.h"
 #include "input.h"
+#include "leds.h"
 
 // =====================================================================
 //  Панель (дашборд): обзор + крупные страницы по каждому датчику
@@ -258,7 +259,7 @@ class SonarScreen : public Screen {
 
  public:
   void enter() override { memset(blips_, 0, sizeof(blips_)); }
-  void leave() override { if (parking_) soundStop(); parking_ = false; }
+  void leave() override { if (parking_) soundStop(); parking_ = false; servoRelease(); }
   bool keepAwake() override { return parking_; }
   void event(Ev e) override {
     if (e == EV_OK) {
@@ -269,10 +270,25 @@ class SonarScreen : public Screen {
     Screen::event(e);
   }
   void update() override {
-    sweep_ += sweepDir_ * 0.9f;
-    if (sweep_ >= 31) { sweep_ = 31; sweepDir_ = -1; }
-    if (sweep_ <= 0) { sweep_ = 0; sweepDir_ = 1; }
-    blips_[(int)sweep_] = S.sonarOk ? (uint8_t)min(200.0f, S.distCm) : 0;
+    if (cfg.servoRadar) {
+      // Настоящий радар: серво поворачивает сонар, шаг — после каждого нового измерения
+      static uint32_t seenSeq = 0;
+      static uint32_t stepAt = 0;
+      if (S.distSeq != seenSeq || millis() - stepAt > 150) {
+        seenSeq = S.distSeq;
+        stepAt = millis();
+        blips_[(int)sweep_] = (S.sonarOk && !isnan(S.distRaw)) ? (uint8_t)min(200.0f, S.distRaw) : 0;
+        sweep_ += sweepDir_;
+        if (sweep_ >= 31) { sweep_ = 31; sweepDir_ = -1; }
+        if (sweep_ <= 0) { sweep_ = 0; sweepDir_ = 1; }
+        servoWrite((int)(sweep_ * 180 / 31));
+      }
+    } else {
+      sweep_ += sweepDir_ * 0.9f;
+      if (sweep_ >= 31) { sweep_ = 31; sweepDir_ = -1; }
+      if (sweep_ <= 0) { sweep_ = 0; sweepDir_ = 1; }
+      blips_[(int)sweep_] = S.sonarOk ? (uint8_t)min(200.0f, S.distCm) : 0;
+    }
 
     if (parking_ && S.sonarOk && S.distCm < 150) {
       uint32_t now = millis();
@@ -288,7 +304,7 @@ class SonarScreen : public Screen {
     }
   }
   void draw() override {
-    drawHeader(parking_ ? "Сонар · парктроник" : "Сонар");
+    drawHeader(parking_ ? "Сонар · парктроник" : cfg.servoRadar ? "Сонар · серво-радар" : "Сонар");
     // радар-полукруг: центр внизу слева
     const int cx = 40, cy = 63, R = 50;
     gfx.drawCircle(cx, cy, R, U8G2_DRAW_UPPER_LEFT | U8G2_DRAW_UPPER_RIGHT);

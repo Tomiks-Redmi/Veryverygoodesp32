@@ -69,7 +69,30 @@ struct Settings {
   bool     wifiOn;
   char     staSsid[33];
   char     staPass[65];
+
+  // Часы и будильник
+  int8_t   tzOffset;         // часовой пояс, часы от UTC
+  bool     alarmClockOn;
+  uint8_t  alarmHour, alarmMin;
+  uint8_t  alarmMelody;
+  uint8_t  alarmDays;        // битовая маска: бит 0 = Пн ... бит 6 = Вс
+
+  // Telegram
+  bool     tgOn;
+  bool     tgMotion;         // сообщать о каждом движении
+  char     tgToken[64];
+  char     tgChat[24];
+
+  // RGB-лента WS2812
+  uint8_t  ledsCount;        // 0 = нет ленты
+  uint8_t  ledsMode;
+  uint8_t  ledsBright;
+
+  // Серво-радар
+  bool     servoRadar;
 };
+
+enum LedsMode : uint8_t { LEDS_OFF = 0, LEDS_STATUS, LEDS_RAINBOW, LEDS_TEMP, LEDS_FIRE, LEDS_NIGHT, LEDS_SONAR, LEDS_MUSIC, LEDS_MODE_COUNT };
 
 extern Settings cfg;
 

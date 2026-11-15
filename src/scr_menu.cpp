@@ -2,6 +2,7 @@
 #include "screens.h"
 #include "display.h"
 #include "sound.h"
+#include "clock.h"
 
 struct CarouselItem {
   const char        *label;
@@ -11,6 +12,7 @@ struct CarouselItem {
 
 static const CarouselItem MAIN_ITEMS[] = {
   {"Панель",      Icons::DASH,   scrDashboard},
+  {"Часы",        Icons::CLOCK,  scrClock},
   {"Графики",     Icons::GRAPH,  scrGraph},
   {"Сонар",       Icons::SONAR,  scrSonar},
   {"Охрана",      Icons::SHIELD, scrSecurity},
@@ -51,8 +53,9 @@ class MainMenu : public Screen {
   }
 
   void draw() override {
-    char t[24];
-    snprintf(t, sizeof(t), "Меню %d/%d", wrap(target_) + 1, MAIN_N);
+    char t[24], hm[8];
+    if (clockValid()) { clockFmtHM(hm, sizeof(hm)); snprintf(t, sizeof(t), "%s  %d/%d", hm, wrap(target_) + 1, MAIN_N); }
+    else snprintf(t, sizeof(t), "Меню %d/%d", wrap(target_) + 1, MAIN_N);
     drawHeader(t);
 
     const int spacing = 46, iconY = 14;
@@ -87,9 +90,16 @@ static const MenuItem GAMES_ITEMS[] = {
   {"Ловец звёзд",     [] { uiPush(scrCatcher()); }},
   {"Тест реакции",    [] { uiPush(scrReaction()); }},
   {"Терменвокс",      [] { uiPush(scrTheremin()); }},
+  {"Понг",            [] { uiPush(scrPong()); }},
+  {"Рисовалка",       [] { uiPush(scrDraw()); }},
+  {"Музыка",          [] { uiPush(scrMusic()); }},
 };
 
 static const MenuItem TOOLS_ITEMS[] = {
+  {"Рулетка",         [] { uiPush(scrRangefinder()); }},
+  {"Счётчик проходов",[] { uiPush(scrPeople()); }},
+  {"RGB-подсветка",   [] { uiPush(scrLeds()); }},
+  {"Серво-тестер",    [] { uiPush(scrServo()); }},
   {"I2C сканер",      [] { uiPush(scrI2CScan()); }},
   {"WiFi сканер",     [] { uiPush(scrWifiScan()); }},
   {"Секундомер",      [] { uiPush(scrStopwatch()); }},

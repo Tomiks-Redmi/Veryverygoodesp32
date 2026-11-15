@@ -24,6 +24,16 @@ Screen *scrFlashlight();
 Screen *scrWifiInfo();
 Screen *scrSettings();
 Screen *scrInfo();
+Screen *scrClock();
+Screen *scrAlarmRing();
+Screen *scrAlarmEdit();
+Screen *scrRangefinder();
+Screen *scrPeople();
+Screen *scrServo();
+Screen *scrLeds();
+Screen *scrPong();
+Screen *scrDraw();
+Screen *scrMusic();
 
 // Экран ввода PIN: после верного ввода вызывается onOk
 void pinEntryStart(void (*onOk)());

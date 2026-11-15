@@ -15,7 +15,9 @@ struct SensorData {
   bool     dsOk = false;
 
   // HC-SR04
-  float    distCm = NAN;
+  float    distCm = NAN;     // сглаженное (медиана из 5)
+  float    distRaw = NAN;    // последнее измерение (для радара на серво)
+  uint32_t distSeq = 0;      // счётчик измерений
   bool     sonarOk = false;
 
   // PIR

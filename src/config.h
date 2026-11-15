@@ -5,7 +5,7 @@
 #pragma once
 
 #define FW_NAME     "VeryGood ESP32"
-#define FW_VERSION  "1.0.0"
+#define FW_VERSION  "1.1.0"
 
 // ---------- OLED 0.96" SSD1306 128x64 (I2C) ----------
 #define PIN_I2C_SDA      21
@@ -42,11 +42,15 @@
 #define PIN_BUZZER       18   // пассивный пьезо-бузер
 #define PIN_LED          2    // встроенный светодиод
 #define PIN_RELAY        19   // модуль реле
+#define PIN_LEDS         23   // адресная RGB-лента / кольцо WS2812B (DIN)
+#define PIN_SERVO        15   // сервопривод SG90 (поворот сонара для радара)
 
 // ---------- WiFi ----------
 #define WIFI_AP_SSID     "VeryGood-ESP32"
 #define WIFI_AP_PASS     "esp32pass"   // минимум 8 символов
 #define MDNS_NAME        "verygood"     // http://verygood.local
+#define NTP_SERVER1      "pool.ntp.org"
+#define NTP_SERVER2      "time.google.com"
 
 // ---------- Тайминги ----------
 #define DHT_PERIOD_MS        2500

@@ -6,8 +6,9 @@
 #include "sound.h"
 #include "net.h"
 #include "logic.h"
+#include "clock.h"
 
-enum SType : uint8_t { T_BOOL, T_U8, T_U16, T_FLOAT, T_TEMP, T_ENUM, T_ACTION };
+enum SType : uint8_t { T_BOOL, T_U8, T_U16, T_FLOAT, T_TEMP, T_ENUM, T_ACTION, T_I8 };
 
 struct SItem {
   const char        *label;
@@ -26,6 +27,7 @@ static const char *const L_LED[]    = {"выкл", "пульс", "движ.", "�
 static const char *const L_OFF[]    = {"выкл"};
 
 static void cbDisplay() { displayApplySettings(); }
+static void cbTz() { clockApplyTz(); }
 static void cbWifi() { netApply(); }
 static void cbForgetSta() {
   cfg.staSsid[0] = 0;
@@ -66,6 +68,10 @@ static const SItem ITEMS[] = {
   {"Джойст. инв. Y",   T_BOOL,  &cfg.joyInvertY,     0,    0,    0,    nullptr, nullptr,    nullptr},
   {"Энкодер инв.",     T_BOOL,  &cfg.encInvert,      0,    0,    0,    nullptr, nullptr,    nullptr},
   {"Аналог. вход",     T_BOOL,  &cfg.analogEnabled,  0,    0,    0,    nullptr, nullptr,    nullptr},
+  {"Часовой пояс",     T_I8,    &cfg.tzOffset,       -12,  14,   1,    nullptr, cbTz,       nullptr},
+  {"Серво-радар",      T_BOOL,  &cfg.servoRadar,     0,    0,    0,    nullptr, nullptr,    nullptr},
+  {"Telegram",         T_BOOL,  &cfg.tgOn,           0,    0,    0,    nullptr, nullptr,    nullptr},
+  {"TG: движение",     T_BOOL,  &cfg.tgMotion,       0,    0,    0,    nullptr, nullptr,    nullptr},
   {"WiFi",             T_BOOL,  &cfg.wifiOn,         0,    0,    0,    nullptr, cbWifi,     nullptr},
   {"Забыть роутер",    T_ACTION, nullptr,            0,    0,    0,    nullptr, cbForgetSta, nullptr},
   {"Сброс настроек",   T_ACTION, nullptr,            0,    0,    0,    nullptr, cbReset,    nullptr},
@@ -77,6 +83,7 @@ static float getNum(const SItem &it) {
   switch (it.type) {
     case T_U8: case T_ENUM: return *(uint8_t *)it.ptr;
     case T_U16:             return *(uint16_t *)it.ptr;
+    case T_I8:              return *(int8_t *)it.ptr;
     case T_FLOAT: case T_TEMP: return *(float *)it.ptr;
     default: return 0;
   }
@@ -87,6 +94,7 @@ static void setNum(const SItem &it, float v) {
   switch (it.type) {
     case T_U8: case T_ENUM: *(uint8_t *)it.ptr = (uint8_t)lroundf(v); break;
     case T_U16:             *(uint16_t *)it.ptr = (uint16_t)lroundf(v); break;
+    case T_I8:              *(int8_t *)it.ptr = (int8_t)lroundf(v); break;
     case T_FLOAT: case T_TEMP: *(float *)it.ptr = roundf(v * 10) / 10; break;
     default: break;
   }
@@ -99,6 +107,7 @@ static void fmtValue(const SItem &it, char *b, size_t n) {
     case T_ENUM:   snprintf(b, n, "%s", it.labels[*(uint8_t *)it.ptr]); break;
     case T_TEMP:   snprintf(b, n, "%.1f%s", cToUnit(*(float *)it.ptr), unitStr()); break;
     case T_FLOAT:  snprintf(b, n, "%.1f", *(float *)it.ptr); break;
+    case T_I8:     snprintf(b, n, "UTC%+d", *(int8_t *)it.ptr); break;
     default: {
       long v = lroundf(getNum(it));
       if (v == 0 && it.labels) snprintf(b, n, "%s", it.labels[0]);

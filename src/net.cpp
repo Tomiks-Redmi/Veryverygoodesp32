@@ -7,6 +7,9 @@
 #include "input.h"
 #include "display.h"
 #include "web_page.h"
+#include "clock.h"
+#include "tg.h"
+#include "leds.h"
 #include <WiFi.h>
 #include <WebServer.h>
 #include <ESPmDNS.h>
@@ -81,6 +84,11 @@ static void handleData() {
   jInt(s, "heap", ESP.getFreeHeap());
   jInt(s, "rssi", netRssi());
   jBool(s, "fahrenheit", cfg.fahrenheit);
+  char hm[8];
+  clockFmtHM(hm, sizeof(hm));
+  jStr(s, "time", hm);
+  jStr(s, "tg", tgStatus());
+  jStr(s, "leds", ledsModeName(cfg.ledsMode));
   jEnd(s);
   s += '}';
   server.send(200, "application/json", s);
@@ -153,6 +161,19 @@ static void handleGetSettings() {
   jInt(s, "motionLightSec", cfg.motionLightSec);
   jInt(s, "graphStepIdx", cfg.graphStepIdx);
   jStr(s, "staSsid", cfg.staSsid);
+  jInt(s, "tzOffset", cfg.tzOffset);
+  jInt(s, "alarmClockOn", cfg.alarmClockOn);
+  char al[8];
+  snprintf(al, sizeof(al), "%02d:%02d", cfg.alarmHour, cfg.alarmMin);
+  jStr(s, "alarmTime", al);
+  jInt(s, "tgOn", cfg.tgOn);
+  jInt(s, "tgMotion", cfg.tgMotion);
+  jStr(s, "tgChat", cfg.tgChat);
+  jBool(s, "tgHasToken", cfg.tgToken[0] != 0);
+  jInt(s, "ledsMode", cfg.ledsMode);
+  jInt(s, "ledsBright", cfg.ledsBright);
+  jInt(s, "ledsCount", cfg.ledsCount);
+  jInt(s, "servoRadar", cfg.servoRadar);
   jEnd(s);
   s += "}";
   server.send(200, "application/json", s);
@@ -181,6 +202,28 @@ static void handlePostSettings() {
   f("thermoHyst", cfg.thermoHyst, 0.1, 10);
   if (server.hasArg("motionLightSec")) cfg.motionLightSec = constrain(server.arg("motionLightSec").toInt(), 1, 3600);
   if (server.hasArg("graphStepIdx")) cfg.graphStepIdx = constrain(server.arg("graphStepIdx").toInt(), 0, GRAPH_STEPS_COUNT - 1);
+  if (server.hasArg("tzOffset")) { cfg.tzOffset = constrain(server.arg("tzOffset").toInt(), -12, 14); clockApplyTz(); }
+  b("alarmClockOn", cfg.alarmClockOn);
+  if (server.hasArg("alarmTime")) {
+    String t = server.arg("alarmTime");  // "ЧЧ:ММ"
+    int c = t.indexOf(':');
+    if (c > 0) {
+      cfg.alarmHour = constrain(t.substring(0, c).toInt(), 0, 23);
+      cfg.alarmMin = constrain(t.substring(c + 1).toInt(), 0, 59);
+    }
+  }
+  b("tgOn", cfg.tgOn);
+  b("tgMotion", cfg.tgMotion);
+  if (server.hasArg("tgChat")) strlcpy(cfg.tgChat, server.arg("tgChat").c_str(), sizeof(cfg.tgChat));
+  if (server.hasArg("tgToken") && server.arg("tgToken").length()) {
+    strlcpy(cfg.tgToken, server.arg("tgToken").c_str(), sizeof(cfg.tgToken));
+    cfg.tgChat[0] = 0;  // новый бот — привязать заново
+  }
+  if (server.hasArg("ledsMode"))   cfg.ledsMode = constrain(server.arg("ledsMode").toInt(), 0, LEDS_MODE_COUNT - 1);
+  if (server.hasArg("ledsBright")) cfg.ledsBright = constrain(server.arg("ledsBright").toInt(), 5, 255);
+  if (server.hasArg("ledsCount"))  cfg.ledsCount = constrain(server.arg("ledsCount").toInt(), 0, 64);
+  b("servoRadar", cfg.servoRadar);
+  ledsApply();
   if (server.hasArg("staSsid")) {
     strlcpy(cfg.staSsid, server.arg("staSsid").c_str(), sizeof(cfg.staSsid));
     if (server.hasArg("staPass") && server.arg("staPass").length())
@@ -214,6 +257,16 @@ static void handleUpdateUpload() {
   }
 }
 
+// Время с телефона/компьютера (если нет интернета для NTP)
+static void handleTime() {
+  uint32_t t = server.arg("t").toInt();
+  if (t > 1700000000UL && (!clockValid() || !netStaConnected())) {
+    clockSetEpoch(t);
+    logEvent("Время получено из браузера");
+  }
+  server.send(200, "text/plain", "ok");
+}
+
 static void startServer() {
   if (serverStarted) return;
   server.on("/", HTTP_GET, [] { server.send_P(200, "text/html; charset=utf-8", WEB_PAGE); });
@@ -223,6 +276,7 @@ static void startServer() {
   server.on("/api/cmd", HTTP_POST, handleCmd);
   server.on("/api/settings", HTTP_GET, handleGetSettings);
   server.on("/api/settings", HTTP_POST, handlePostSettings);
+  server.on("/api/time", HTTP_POST, handleTime);
   server.on("/update", HTTP_POST, handleUpdateDone, handleUpdateUpload);
   server.onNotFound([] { server.send(404, "text/plain", "Not found"); });
   server.begin();
@@ -270,6 +324,7 @@ void netUpdate() {
   if (c != wasConnected) {
     wasConnected = c;
     if (c) {
+      clockStartNtp();
       logEvent("WiFi IP %s", WiFi.localIP().toString().c_str());
       char b[40];
       snprintf(b, sizeof(b), "IP %s", WiFi.localIP().toString().c_str());

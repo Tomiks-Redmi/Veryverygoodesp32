@@ -16,6 +16,9 @@
 #include "net.h"
 #include "ui.h"
 #include "screens.h"
+#include "clock.h"
+#include "leds.h"
+#include "tg.h"
 
 // ---------------- Заставка при загрузке ----------------
 static void splash(const char *status, float progress) {
@@ -132,8 +135,12 @@ void setup() {
   sensorsBegin();
   logicBegin();
 
+  clockBegin();
+  ledsBegin();
+
   splash("WiFi", 0.75f);
   netBegin();
+  tgBegin();
 
   splash("Готово!", 1.0f);
   randomSeed(esp_random());
@@ -153,7 +160,10 @@ void loop() {
   sensorsUpdate();
   logicUpdate();
   soundUpdate();
+  clockUpdate();
+  ledsUpdate();
   netUpdate();
+  tgUpdate();
   uiLoop();
   serialCli();
   delay(1);

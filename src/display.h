@@ -62,6 +62,7 @@ extern const char *const GEAR[16];
 extern const char *const INFO[16];
 extern const char *const DROP[16];
 extern const char *const PERSON[16];
+extern const char *const CLOCK[16];
 // мелкие 7x7 для строки состояния
 extern const char *const S_WIFI[7];
 extern const char *const S_LOCK[7];

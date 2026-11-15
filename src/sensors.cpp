@@ -55,6 +55,8 @@ static void sonarUpdate(uint32_t now) {
     echoDone = false;
     float cm = echoLen * speedOfSound() / 20000.0f;  // мкс * м/с / 2 / 10000
     if (cm >= 2 && cm <= SONAR_MAX_CM) {
+      S.distRaw = cm;
+      S.distSeq++;
       sonarBuf[sonarIdx] = cm;
       sonarIdx = (sonarIdx + 1) % 5;
       if (sonarFill < 5) sonarFill++;
@@ -72,7 +74,7 @@ static void sonarUpdate(uint32_t now) {
     digitalWrite(PIN_SONAR_TRIG, LOW);
   }
   bool ok = lastEchoMs && (now - lastEchoMs < 1500);
-  if (!ok) { S.distCm = NAN; sonarFill = 0; }
+  if (!ok) { S.distCm = S.distRaw = NAN; sonarFill = 0; }
   S.sonarOk = ok;
 }
 

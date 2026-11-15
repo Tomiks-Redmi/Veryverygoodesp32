@@ -5,6 +5,8 @@
 #include "sound.h"
 #include "display.h"
 #include <stdarg.h>
+#include "tg.h"
+#include "leds.h"
 
 // ---------------- Журнал ----------------
 static const uint8_t LOG_SIZE = 16;
@@ -70,6 +72,7 @@ void secDisarm() {
   soundStop();
   sfx(SFX_DISARMED);
   logEvent("Охрана снята");
+  tgNotify("🔓 Охрана снята");
 }
 
 static void secTrigger(const char *why) {
@@ -79,6 +82,7 @@ static void secTrigger(const char *why) {
   secSince = millis();
   alarmCount++;
   logEvent("ТРЕВОГА: %s", why);
+  tgNotify("🚨 ТРЕВОГА! Причина: %s", why);
   toast("ТРЕВОГА!", 3000);
 }
 
@@ -100,6 +104,7 @@ static void secUpdate(uint32_t now) {
         secSince = now;
         sfx(SFX_ARMED);
         logEvent("Охрана включена");
+        tgNotify("🛡 Охрана включена");
         sonarWasNear = near;  // не срабатывать на уже стоящий предмет
       }
       break;
@@ -192,8 +197,8 @@ static void tempAlertUpdate() {
   if (z != tempZone) {
     tempZone = z;
     char b[28];
-    if (z == 1)       { snprintf(b, sizeof(b), "Жарко! %.1f", cToUnit(t)); toast(b, 2500); sfx(SFX_ALERT); logEvent("Высокая темп. %.1fC", t); }
-    else if (z == -1) { snprintf(b, sizeof(b), "Холодно! %.1f", cToUnit(t)); toast(b, 2500); sfx(SFX_ALERT); logEvent("Низкая темп. %.1fC", t); }
+    if (z == 1)       { snprintf(b, sizeof(b), "Жарко! %.1f", cToUnit(t)); toast(b, 2500); sfx(SFX_ALERT); logEvent("Высокая темп. %.1fC", t); tgNotify("🔥 Жарко: %.1f °C", t); }
+    else if (z == -1) { snprintf(b, sizeof(b), "Холодно! %.1f", cToUnit(t)); toast(b, 2500); sfx(SFX_ALERT); logEvent("Низкая темп. %.1fC", t); tgNotify("❄️ Холодно: %.1f °C", t); }
   }
 }
 
@@ -204,6 +209,12 @@ static void motionUpdate() {
   if (S.motionCount != motionSeen) {
     motionSeen = S.motionCount;
     if (sec == SEC_DISARMED) logEvent("Движение #%lu", (unsigned long)S.motionCount);
+    ledsFlash(0x303030, 150);
+    static uint32_t lastTg = 0;
+    if (cfg.tgMotion && sec != SEC_ALARM && (!lastTg || millis() - lastTg > 60000)) {
+      lastTg = millis();
+      tgNotify("🚶 Движение (#%lu)", (unsigned long)S.motionCount);
+    }
   }
 }
 

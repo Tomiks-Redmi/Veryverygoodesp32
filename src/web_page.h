@@ -29,7 +29,7 @@ canvas{width:100%;height:170px;display:block}
 label{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:6px 0}label input,label select{width:120px}
 #log div{border-bottom:1px solid var(--line);padding:4px 0;font-size:13px}#log span{color:var(--mut);margin-right:8px}
 </style></head><body>
-<header><h1><b>VeryGood</b> ESP32</h1><div id="st">подключение…</div></header>
+<header><h1><b>VeryGood</b> ESP32 <span id="clk" style="color:var(--mut);font-weight:500"></span></h1><div id="st">подключение…</div></header>
 <main>
 <div class="c"><h3>DS18B20</h3><div class="v" id="ds">--</div><div class="s" id="dsx"></div></div>
 <div class="c"><h3>DHT11</h3><div class="v" id="dht">--</div><div class="s" id="dhth"></div></div>
@@ -65,6 +65,22 @@ label{display:flex;justify-content:space-between;gap:8px;align-items:center;marg
 <div class="row"><button class="p" type="submit">Подключить</button><span class="s" id="ip"></span></div></form>
 <h3 style="margin-top:14px">Обновление прошивки</h3>
 <form id="uf"><div class="row"><input type="file" name="fw" accept=".bin"><button type="submit">Загрузить</button><span class="s" id="up"></span></div></form></div>
+<div class="c w2"><h3>Часы, будильник, подсветка</h3><form id="af">
+<label>Часовой пояс (UTC±)<input name="tzOffset" type="number" min="-12" max="14"></label>
+<label>Будильник<select name="alarmClockOn"><option value="0">выкл</option><option value="1">вкл</option></select></label>
+<label>Время будильника<input name="alarmTime" type="time"></label>
+<label>RGB-лента<select name="ledsMode"><option value="0">выкл</option><option value="1">статус</option><option value="2">радуга</option><option value="3">температура</option><option value="4">огонь</option><option value="5">ночник по движению</option><option value="6">сонар</option><option value="7">музыка</option></select></label>
+<label>Яркость ленты<input name="ledsBright" type="range" min="5" max="255"></label>
+<label>Светодиодов в ленте<input name="ledsCount" type="number" min="0" max="64"></label>
+<label>Серво-радар<select name="servoRadar"><option value="0">выкл</option><option value="1">вкл</option></select></label>
+<div class="row"><button class="p" type="submit">Сохранить</button></div></form></div>
+<div class="c w2"><h3>Telegram-бот</h3><form id="tf">
+<div class="s">1) Создайте бота у @BotFather и вставьте токен. 2) Напишите боту любое сообщение — он привяжется к вашему чату. Нужен интернет через роутер.</div>
+<label>Включён<select name="tgOn"><option value="0">нет</option><option value="1">да</option></select></label>
+<label>Токен<input name="tgToken" type="password" style="width:180px" placeholder="без изменений"></label>
+<label>Chat ID<input name="tgChat" style="width:180px" placeholder="привяжется сам"></label>
+<label>Сообщать о движении<select name="tgMotion"><option value="0">нет</option><option value="1">да</option></select></label>
+<div class="row"><button class="p" type="submit">Сохранить</button><span class="s" id="tgs"></span></div></form></div>
 <div class="c full"><h3>Журнал событий</h3><div id="log"></div></div>
 </main>
 <script>
@@ -82,6 +98,7 @@ $('mot').textContent=d.motion?'ЕСТЬ':'нет';$('motx').textContent='сра�
 $('sec').textContent=d.secName+(d.armLeft?' '+d.armLeft+'с':'');$('secd').className='dot '+(d.sec==3?'al':d.sec?'on':'');
 $('secx').textContent='тревог: '+d.alarms+' · последняя: '+d.trigger;
 $('rel').textContent=d.relay?'ВКЛ':'ВЫКЛ';$('rd').className='dot '+(d.relay?'on':'');$('relx').textContent='режим: '+d.relayModeName+(d.relayMode==2||d.relayMode==3?' · цель '+T(d.target)+U():'');
+$('clk').textContent=d.time!='--:--'?d.time:'';$('tgs').textContent='статус: '+d.tg;
 $('jd').style.left=(47+d.joyX*0.47)+'px';$('jd').style.top=(47+d.joyY*0.47)+'px';$('joyx').textContent=d.joy?('X '+d.joyX+' · Y '+d.joyY):'не подключён';
 }catch(e){$('st').textContent='нет связи'}}
 async function hist(){try{const d=await (await fetch('/api/history?id='+hid)).json();draw(d.v,d.step)}catch(e){}}
@@ -94,12 +111,15 @@ g.beginPath();let st=false;v.forEach((x,i)=>{if(x==null){st=false;return}if(!st)
 g.strokeStyle='#3fb6ff';g.lineWidth=2;g.stroke();
 $('hinfo').textContent='мин '+Math.min(...a).toFixed(1)+' · макс '+Math.max(...a).toFixed(1)+' · '+fmt(v.length*step)}
 async function log(){try{const d=await (await fetch('/api/log')).json();$('log').innerHTML=d.map(e=>'<div><span>'+fmt(e.ago)+' назад</span>'+e.t.replace(/</g,'&lt;')+'</div>').join('')}catch(e){}}
-async function loadSet(){const d=await (await fetch('/api/settings')).json();for(const el of $('f').elements){if(el.name&&d[el.name]!=null)el.value=d[el.name]}$('wf').staSsid.value=d.staSsid}
+async function loadSet(){const d=await (await fetch('/api/settings')).json();for(const f of ['f','af','tf'])for(const el of $(f).elements){if(el.name&&d[el.name]!=null)el.value=d[el.name]}$('wf').staSsid.value=d.staSsid}
 function post(url,data){return fetch(url,{method:'POST',body:new URLSearchParams(data)})}
 $('f').onsubmit=e=>{e.preventDefault();post('/api/settings',new FormData($('f'))).then(()=>{$('f').querySelector('button').textContent='Сохранено ✓';setTimeout(()=>$('f').querySelector('button').textContent='Сохранить',1500)})};
+$('af').onsubmit=e=>{e.preventDefault();post('/api/settings',new FormData($('af'))).then(()=>{const b=$('af').querySelector('button');b.textContent='Сохранено ✓';setTimeout(()=>b.textContent='Сохранить',1500)})};
+$('tf').onsubmit=e=>{e.preventDefault();const fd=new FormData($('tf'));if(!fd.get('tgToken'))fd.delete('tgToken');post('/api/settings',fd).then(()=>{$('tf').tgToken.value='';const b=$('tf').querySelector('button');b.textContent='Сохранено ✓';setTimeout(()=>b.textContent='Сохранить',1500);setTimeout(loadSet,500)})};
 $('wf').onsubmit=e=>{e.preventDefault();post('/api/settings',new FormData($('wf'))).then(()=>$('ip').textContent='подключаюсь…')};
 $('uf').onsubmit=e=>{e.preventDefault();const fd=new FormData($('uf'));if(!fd.get('fw').size)return;const x=new XMLHttpRequest();x.open('POST','/update');
 x.upload.onprogress=p=>$('up').textContent=Math.round(p.loaded/p.total*100)+'%';x.onload=()=>$('up').textContent=x.responseText;x.send(fd)};
 $('hs').onchange=e=>{hid=+e.target.value;hist()};
+post('/api/time',{t:Math.floor(Date.now()/1000)});
 tick();hist();log();loadSet();setInterval(tick,1000);setInterval(hist,5000);setInterval(log,4000);
 </script></body></html>)HTML";

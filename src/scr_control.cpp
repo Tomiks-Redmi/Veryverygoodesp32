@@ -5,6 +5,7 @@
 #include "settings.h"
 #include "sound.h"
 #include "logic.h"
+#include "clock.h"
 
 // =====================================================================
 //  Ввод PIN-кода
@@ -291,14 +292,19 @@ class LogScreen : public Screen {
       const LogEntry &e = logGet(top_ + i);
       uint32_t ago = (now - e.ms) / 1000;
       char t[8];
-      if (ago < 60) snprintf(t, sizeof(t), "%luс", (unsigned long)ago);
+      if (clockValid()) {
+        time_t ts = time(nullptr) - ago;
+        struct tm tm;
+        localtime_r(&ts, &tm);
+        snprintf(t, sizeof(t), "%02d:%02d", tm.tm_hour, tm.tm_min);
+      } else if (ago < 60) snprintf(t, sizeof(t), "%luс", (unsigned long)ago);
       else if (ago < 3600) snprintf(t, sizeof(t), "%luм", (unsigned long)(ago / 60));
       else snprintf(t, sizeof(t), "%luч", (unsigned long)(ago / 3600));
       int y = HEADER_H + 8 + i * 9;
       gfx.setFont(F_TINY);
       gfx.drawUTF8(0, y, t);
       gfx.setFont(F_SMALL);
-      gfx.drawUTF8(17, y, e.text);
+      gfx.drawUTF8(clockValid() ? 22 : 17, y, e.text);
     }
     drawScrollbar(top_, max(1, n - 5));
   }

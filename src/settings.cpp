@@ -3,7 +3,7 @@
 #include "display.h"
 
 // Меняйте при изменении структуры Settings — настройки сбросятся к умолчаниям
-static const uint32_t SETTINGS_MAGIC = 0x56470103;
+static const uint32_t SETTINGS_MAGIC = 0x56470200;
 
 Settings cfg;
 static Preferences prefs;
@@ -43,6 +43,18 @@ static void setDefaults() {
   cfg.ledMode        = LED_HEARTBEAT;
   cfg.graphStepIdx   = 1;
   cfg.wifiOn         = true;
+  cfg.tzOffset       = 3;      // Москва
+  cfg.alarmClockOn   = false;
+  cfg.alarmHour      = 7;
+  cfg.alarmMin       = 30;
+  cfg.alarmMelody    = 4;
+  cfg.alarmDays      = 0x7F;   // каждый день
+  cfg.tgOn           = false;
+  cfg.tgMotion       = false;
+  cfg.ledsCount      = 8;
+  cfg.ledsMode       = LEDS_STATUS;
+  cfg.ledsBright     = 60;
+  cfg.servoRadar     = false;
 }
 
 void settingsLoad() {
@@ -55,6 +67,8 @@ void settingsLoad() {
     cfg = tmp;
     cfg.staSsid[sizeof(cfg.staSsid) - 1] = 0;
     cfg.staPass[sizeof(cfg.staPass) - 1] = 0;
+    cfg.tgToken[sizeof(cfg.tgToken) - 1] = 0;
+    cfg.tgChat[sizeof(cfg.tgChat) - 1] = 0;
   }
 }
 
